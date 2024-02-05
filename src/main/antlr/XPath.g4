@@ -1,5 +1,9 @@
 grammar XPath;
 
+@header {
+    package org.cse232b.antlr4;
+}
+
 //absolute path
 ap  : doc '/' rp    
     | doc '//' rp   
