@@ -30,6 +30,14 @@
             <version>4.7.2</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4</artifactId>
+            <version>4.7.2</version>
+            <classifier>complete</classifier>
+            <scope>compile</scope>
+        </dependency>
+
     </dependencies>
 
 
@@ -52,8 +60,7 @@
                 <artifactId>antlr4-maven-plugin</artifactId>
                 <version>4.7.2</version>
                 <configuration>
-                    <sourceDirectory>src/main/antlr</sourceDirectory>
-                    <outputDirectory>${project.build.directory}/gen_src</outputDirectory>
+                    <sourceDirectory>src/main/antlr4</sourceDirectory>
                     <listener>false</listener>
                     <visitor>true</visitor>
                 </configuration>
@@ -65,6 +72,7 @@
                     </execution>
                 </executions>
             </plugin>
+
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -89,6 +97,7 @@
                     </execution>
                 </executions>
             </plugin>
+
 
 
         </plugins>

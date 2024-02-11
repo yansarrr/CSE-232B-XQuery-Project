@@ -46,7 +46,7 @@ public class XPathEvaluator {
             CommonTokenStream tks = new CommonTokenStream(lexer);
             XPathParser parser = new XPathParser(tks);
             parser.removeErrorListeners();
-            QEngineXPathVisitor visitor = new QEngineXPathVisitor();
+            EngineXPathVisitor visitor = new EngineXPathVisitor();
             visitor.setPNodes(pNodes);
             return visitor.visit(parser.rp());
         } catch (Exception e) {
