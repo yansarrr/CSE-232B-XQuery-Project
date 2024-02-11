@@ -14,7 +14,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 
-public class EngineXPathVisitor extends XPathBaseVisitor<List<Node>> {
+public class ExtendedEngineXPathVisitor extends XPathBaseVisitor<List<Node>> {
 
     private List<Node> paramNodes = new LinkedList<>();
 

@@ -19,7 +19,7 @@ public class XPathEvaluator {
         CommonTokenStream tks = new CommonTokenStream(lexer);
         XPathParser parser = new XPathParser(tks);
         parser.removeErrorListeners();
-        EngineXPathVisitor visitor = new EngineXPathVisitor();
+        ExtendedEngineXPathVisitor visitor = new ExtendedEngineXPathVisitor();
         List<Node> res = visitor.visit(parser.ap());
         if (res == null) {
             throw new Exception("visitor failed to get result.");
@@ -46,7 +46,7 @@ public class XPathEvaluator {
             CommonTokenStream tks = new CommonTokenStream(lexer);
             XPathParser parser = new XPathParser(tks);
             parser.removeErrorListeners();
-            EngineXPathVisitor visitor = new EngineXPathVisitor();
+            ExtendedEngineXPathVisitor visitor = new ExtendedEngineXPathVisitor();
             visitor.setPNodes(pNodes);
             return visitor.visit(parser.rp());
         } catch (Exception e) {

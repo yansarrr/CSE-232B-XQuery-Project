@@ -16,9 +16,12 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -41,9 +44,11 @@ public class XMLProcessor {
             DocumentBuilder builder = getDocumentBuilder(dtdStream);
             Document document = builder.parse(xmlDataFileStream);
             document.getDocumentElement().normalize();
-            return List.of(document);
+            return Arrays.asList(document);
         }
     }
+
+
 
     public static List<Node> loadNodes(String xmlFileName) throws Exception {
         if (!DEFAULT_XML_FILE_NAME.equals(xmlFileName)) {
