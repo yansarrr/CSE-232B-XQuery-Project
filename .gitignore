@@ -43,4 +43,7 @@ target
 
 
 ### zshrc ###
-.zshrc
+.zshrc/
+
+### idea ###
+.idea
