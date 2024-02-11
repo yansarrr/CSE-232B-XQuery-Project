@@ -2,18 +2,55 @@ package org.cse232b;
 
 // Press Shift twice to open the Search Everywhere dialog and type `show whitespaces`,
 // then press Enter. You can now see whitespace characters in your code.
+import org.w3c.dom.Node;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import java.io.*;
+import java.util.List;
+
 public class Main {
-    public static void main(String[] args) {
-        // Press Opt+Enter with your caret at the highlighted text to see how
-        // IntelliJ IDEA suggests fixing it.
-        System.out.printf("Hello and welcome!");
+    public static void main( String[] args )
+    {
+        if(args.length != 1){
+            System.out.printf("wrong args number: expect 1 received %d \n", args.length);
+            System.out.println("usage java -jar CSE-232B-M1.jar one_xpath_query.txt");
+            return;
+        }
+        xPathEvaluate(args[0]);
+    }
 
-        // Press Ctrl+R or click the green arrow button in the gutter to run the code.
-        for (int i = 1; i <= 5; i++) {
+    private static void xPathEvaluate(String xPathFilePath) {
+        List<Node> rawEvaluateRes = null;
+        try(
+                InputStream xPathIStream = new FileInputStream(xPathFilePath)
+        ) {
+            rawEvaluateRes = XPathEvaluator.evaluateXPathWithoutExceptionPrintErr(xPathIStream);
+        } catch (IOException e) {
+            System.err.println("open xPath file failed: " + e.getMessage());
+            return;
+        }
+        if( rawEvaluateRes == null ){
+            System.err.println("XPath evaluation failed. No result file generated.");
+            return;
+        }
+        System.out.println("XPath evaluation finished, writing result file...");
+        writeResultToFile(rawEvaluateRes, "xpath_result.xml", true);
+    }
 
-            // Press Ctrl+D to start debugging your code. We have set one breakpoint
-            // for you, but you can always add more by pressing Cmd+F8.
-            System.out.println("i = " + i);
+
+    private static void writeResultToFile(List<Node> rawRes, String fileName, boolean addResEle) {
+        try(
+                OutputStream resultXMLOStream = new FileOutputStream(fileName)
+        ) {
+            XMLProcessor.processAndOutputXML(fileName, resultXMLOStream, addResEle);
+        }  catch (IOException e) {
+            System.err.println("open result file failed: " + e.getMessage());
+        } catch (ParserConfigurationException | TransformerException e){
+            System.err.println("generating XML or transforming failed:" + e.getMessage());
+        }
+        catch (Exception e){
+            System.err.println("runtime exception while generating/writing result:" + e.getMessage());
         }
     }
 }
