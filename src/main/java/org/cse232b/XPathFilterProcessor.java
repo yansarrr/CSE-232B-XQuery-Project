@@ -9,30 +9,14 @@ import java.util.stream.Collectors;
 
 public class XPathFilterProcessor {
 
-    public static List<Node> visitStringFilter(List<Node> paramNodes, XPathParser.StringFilterContext ctx, Function<XPathParser.RpContext, List<Node>> visit) {
-        return filterCollectVisitHelper(paramNodes,
-                node -> {
-                    List<Node> oneNodeList = new LinkedList<>();
-                    oneNodeList.add(node);
-                    List<Node> res1 = visit.apply(ctx.rp());
-                    String stringConstant = ctx.stringConstant().ID().getText();
-                    for (Node x : res1) {
-                        if (x.getTextContent().equals(stringConstant)) {
-                            return true;
-                        }
-                    }
-                    return false;
-                }
-        );
-    }
 
-//    public static List<Node> visitStringFilter(List<Node> paramNodes, XPathParser.StringFilterContext ctx, Function<XPathParser.RpContext, List<Node>> visit) {
-//        String stringConstant = ctx.stringConstant().ID().getText();
-//        return paramNodes.stream()
-//                .flatMap(node -> visit.apply(ctx.rp()).stream())
-//                .filter(node -> node.getTextContent().equals(stringConstant))
-//                .collect(Collectors.toList());
-//    }
+    public static List<Node> visitStringFilter(List<Node> paramNodes, XPathParser.StringFilterContext ctx, Function<XPathParser.RpContext, List<Node>> visit) {
+        String stringConstant = ctx.stringConstant().ID().getText();
+        return paramNodes.stream()
+                .flatMap(node -> visit.apply(ctx.rp()).stream())
+                .filter(node -> node.getTextContent().equals(stringConstant))
+                .collect(Collectors.toList());
+    }
 
 
     public static List<Node> visitEqFilter(List<Node> paramNodes, XPathParser.EqFilterContext ctx, Function<XPathParser.RpContext, List<Node>> visit) {

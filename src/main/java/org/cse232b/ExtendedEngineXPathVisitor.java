@@ -85,18 +85,10 @@ public class ExtendedEngineXPathVisitor extends XPathBaseVisitor<List<Node>> {
 
     @Override
     public List<Node> visitChildrenRP(XPathParser.ChildrenRPContext ctx) {
-
-        LinkedList<Node> res = new LinkedList<>();
-
-        for (Node node : paramNodes) {
-            NodeList children = node.getChildNodes();
-            for (int i = 0; i < children.getLength(); i++) {
-                Node child = children.item(i);
-                res.add(child);
-            }
-        }
-        return res;
-
+        return paramNodes.stream()
+                .flatMap(node -> IntStream.range(0, node.getChildNodes().getLength())
+                        .mapToObj(node.getChildNodes()::item))
+                .collect(Collectors.toCollection(LinkedList::new));
     }
 
     @Override
@@ -106,7 +98,6 @@ public class ExtendedEngineXPathVisitor extends XPathBaseVisitor<List<Node>> {
 
     @Override
     public List<Node> visitParentRP(XPathParser.ParentRPContext ctx) {
-
         LinkedList<Node> res = new LinkedList<>();
 
         for (Node node : paramNodes) {
@@ -120,20 +111,13 @@ public class ExtendedEngineXPathVisitor extends XPathBaseVisitor<List<Node>> {
 
     @Override
     public List<Node> visitTextRP(XPathParser.TextRPContext ctx) {
-
-        LinkedList<Node> res = new LinkedList<>();
-
-        for (Node node : paramNodes) {
-            NodeList children = node.getChildNodes();
-            for (int i = 0; i < children.getLength(); i++) {
-                Node child = children.item(i);
-                if (child.getNodeType() == Node.TEXT_NODE) {  // get all TextNode
-                    res.add(child);
-                }
-            }
-        }
-        return res;
+        return paramNodes.stream()
+                .flatMap(node -> IntStream.range(0, node.getChildNodes().getLength())
+                        .mapToObj(node.getChildNodes()::item)
+                        .filter(child -> child.getNodeType() == Node.TEXT_NODE))
+                .collect(Collectors.toCollection(LinkedList::new));
     }
+
 
     @Override
     public List<Node> visitAttrRP(XPathParser.AttrRPContext ctx) {

@@ -47,9 +47,9 @@ public class Main {
         } catch (IOException e) {
             System.err.println("Open result file failed: " + e.getMessage());
         } catch (ParserConfigurationException | TransformerException e) {
-            System.err.println("Generating XML or transforming failed: " + e.getMessage());
+            System.err.println("Generate or transform XML failed: " + e.getMessage());
         } catch (Exception e) {
-            System.err.println("Runtime exception while generating/writing result: " + e.getMessage());
+            System.err.println("Encountered a runtime exception during result generation/writing: " + e.getMessage());
         }
     }
 
