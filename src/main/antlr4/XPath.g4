@@ -3,13 +3,15 @@ grammar XPath;
 @header {
     package org.cse232b.antlr4;
 }
-//absolute path
+
+// abs path
 ap  : doc '/' rp    #singleAP
     | doc '//' rp   #doubleAP
     ;
 
 // document
-doc : ('doc("' | 'document("') fileName '")'
+doc : 'doc("' fileName '")'
+    | 'document("' fileName '")'
     ;
 
 // relative path
@@ -26,11 +28,11 @@ rp  : tagName       #tagRP
     | rp ',' rp     #commaRP
     ;
 
-//filter
+// filter
 f   : rp        #rpFilter
-    | rp eq rp  #eqFilter
+    | rp EQ rp  #eqFilter
     | rp IS rp  #isFilter
-	| rp '=' '"' stringConstant '"' #stringFilter
+	| rp '=' stringConstant #stringFilter
     | '(' f ')' #bracketFilter
     | f 'and' f #andFilter
     | f 'or' f  #orFilter
@@ -39,12 +41,13 @@ f   : rp        #rpFilter
 
 tagName : ID;
 attrName : ID;
-stringConstant: '"' ID '"' | '\'' ID '\'';
+stringConstant : '"' ID '"';
 
-eq  : '=' | 'eq';
+EQ  : '=' | 'eq';
 IS  : '==' | 'is';
 ID  : [a-zA-Z][a-zA-Z0-9_-]*;
 
 fileName    : FILENAME;
 FILENAME    : [a-zA-Z0-9_.-]+;
-SPC  : [ \t\n\r]+ -> skip;
+
+SPC  : [ \t\r\n]+ -> skip;

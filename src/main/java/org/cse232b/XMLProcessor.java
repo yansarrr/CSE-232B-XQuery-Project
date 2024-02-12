@@ -48,8 +48,6 @@ public class XMLProcessor {
         }
     }
 
-
-
     public static List<Node> loadNodes(String xmlFileName) throws Exception {
         if (!DEFAULT_XML_FILE_NAME.equals(xmlFileName)) {
             throw new Exception("XML data file is not in resources");

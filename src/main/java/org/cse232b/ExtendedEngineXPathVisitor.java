@@ -5,30 +5,26 @@ import org.cse232b.antlr4.XPathParser;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-
+import java.util.LinkedList;
+import java.util.*;
+import java.util.stream.IntStream;
 
 public class ExtendedEngineXPathVisitor extends XPathBaseVisitor<List<Node>> {
 
     private List<Node> paramNodes = new LinkedList<>();
 
-    // Attention: param nodes are set in a value-based way. Any callee can modify or return it exclusively.
-    void setPNodes(List<Node> origin){
+    void setParamNodes(List<Node> origin){
         paramNodes = new LinkedList<>(origin);
     }
 
-    // helper function to get all strict descendents of a node
+
     public LinkedList<Node> getDescendents(Node node) {
 
         LinkedList<Node> res = new LinkedList<>(); // result
-
         NodeList childrenNodes = node.getChildNodes();
+
         for (int i = 0; i < childrenNodes.getLength(); i++) {
             Node curtChild = childrenNodes.item(i);
             res.add(curtChild); // add a child
@@ -37,29 +33,20 @@ public class ExtendedEngineXPathVisitor extends XPathBaseVisitor<List<Node>> {
         return res;
     }
 
-    // helper function: set the paramNodes to be the descendents-and-self of the original paramNodes, and then perform whatever visit action intended.
     public List<Node> visitDoubleSlash(XPathParser.RpContext ctx) {
+        Set<Node> uniqueNodes = new HashSet<>();
 
-        List<Node> currentCtxPNodes = paramNodes;
-        setPNodes(currentCtxPNodes);
-
-        // store all the descendents of paramNodes into tmp
-        LinkedList<Node> tmp = new LinkedList<>();
         for (Node node : paramNodes) {
-            tmp.addAll(getDescendents(node));
+            uniqueNodes.add(node); // Add the node itself
+            uniqueNodes.addAll(getDescendents(node)); // Add all descendants
         }
+        paramNodes.clear();
+        paramNodes.addAll(uniqueNodes);
 
-        // add all the descendents, so that paramNodes now becomes descendents-and-self of the original paramNodes
-        for (Node node : tmp) {
-            if (!paramNodes.contains(node)) {  // Edge Case => The query is doc("file")//A//A, and the DOM tree consists only A nodes.
-                paramNodes.add(node);
-            }
-        }
-
-        List<Node> currentCtxPNodes2 = paramNodes;
-        setPNodes(currentCtxPNodes2);
-        return visit(ctx);  // now the paramNodes (the to-be operational context nodes) are successfully updated, perform whatever visit action intended.
+        setParamNodes(paramNodes);
+        return visit(ctx);
     }
+
 
     @Override
     public List<Node> visitDoc(XPathParser.DocContext ctx) {
@@ -73,38 +60,28 @@ public class ExtendedEngineXPathVisitor extends XPathBaseVisitor<List<Node>> {
 
     @Override
     public List<Node> visitSingleAP(XPathParser.SingleAPContext ctx) {
-        // no setPNodes since doc nodes have not been loaded.
         List<Node> resDoc = visit(ctx.doc());
-        setPNodes(resDoc);
+        setParamNodes(resDoc);
         return visit(ctx.rp());
-
     }
 
     @Override
     public List<Node> visitDoubleAP(XPathParser.DoubleAPContext ctx) {
         List<Node> resDoc = visit(ctx.doc()); // Only the document root node is in the list.
-        setPNodes(resDoc);
+        setParamNodes(resDoc);
         return visitDoubleSlash(ctx.rp());
     }
 
     @Override
     public List<Node> visitTagRP(XPathParser.TagRPContext ctx) {
-
-        LinkedList<Node> res = new LinkedList<>();
         String targetTagName = ctx.tagName().ID().getText();
-        for (Node node : paramNodes) {
-            NodeList children = node.getChildNodes();
-            // iterate the children to find the nodes with the right tag
-            for (int i = 0; i < children.getLength(); i++) {
-                Node child = children.item(i);
-                if (child.getNodeType() == Node.ELEMENT_NODE && child.getNodeName().equals(targetTagName)){
-                    res.add(child);
-                }
-            }
-        }
-
-        return res;
+        return paramNodes.stream()
+                .flatMap(node -> IntStream.range(0, node.getChildNodes().getLength())
+                        .mapToObj(node.getChildNodes()::item)
+                        .filter(child -> child.getNodeType() == Node.ELEMENT_NODE && child.getNodeName().equals(targetTagName)))
+                .collect(Collectors.toCollection(LinkedList::new));
     }
+
 
     @Override
     public List<Node> visitChildrenRP(XPathParser.ChildrenRPContext ctx) {
@@ -158,165 +135,122 @@ public class ExtendedEngineXPathVisitor extends XPathBaseVisitor<List<Node>> {
         return res;
     }
 
-    // not sure about this one
     @Override
     public List<Node> visitAttrRP(XPathParser.AttrRPContext ctx) {
+        List<Node> res = paramNodes.stream()
+                .filter(node -> node.getNodeType() == Node.ELEMENT_NODE)
+                .flatMap(node -> IntStream.range(0, node.getAttributes().getLength())
+                        .mapToObj(idx -> node.getAttributes().item(idx)))
+                .collect(Collectors.toCollection(LinkedList::new));
 
-        LinkedList<Node> res = new LinkedList<>();
-
-        for (Node node : paramNodes) {
-
-            if(node.getNodeType() != Node.ELEMENT_NODE)
-                continue;
-
-            NamedNodeMap attributes = node.getAttributes(); // get all attributes of a node
-            for (int i = 0; i < attributes.getLength(); i++) {
-                res.add(attributes.item(i));
-            }
-        }
-
-        setPNodes(res);
+        setParamNodes(res);
         return visit(ctx.attrName());
-
     }
+
 
     @Override
     public List<Node> visitBracketRP(XPathParser.BracketRPContext ctx) {
 
         List<Node> currentCtxPNodes = paramNodes;
-        setPNodes(currentCtxPNodes);
+        setParamNodes(currentCtxPNodes);
         return visit(ctx.rp());
-
     }
 
     @Override
     public List<Node> visitSingleSlashRP(XPathParser.SingleSlashRPContext ctx) {
 
         List<Node> currentCtxPNodes = paramNodes;
-        setPNodes(currentCtxPNodes);
+        setParamNodes(currentCtxPNodes);
         List<Node> res1 = visit(ctx.rp(0));
-        setPNodes(res1);
+        setParamNodes(res1);
         List<Node> res2 = visit(ctx.rp(1));
 
         // remove duplicates
         LinkedHashSet<Node> lhs = new LinkedHashSet<>(res2);
         return new LinkedList<>(lhs);
-
     }
 
     @Override
     public List<Node> visitDoubleSlashRP(XPathParser.DoubleSlashRPContext ctx) {
 
         List<Node> currentCtxPNodes = paramNodes;
-        setPNodes(currentCtxPNodes);
+        setParamNodes(currentCtxPNodes);
         List<Node> res1 = visit(ctx.rp(0));
-        setPNodes(res1);
+        setParamNodes(res1);
         List<Node> res2 = visitDoubleSlash(ctx.rp(1));
 
         // remove duplicates
         LinkedHashSet<Node> lhs = new LinkedHashSet<>(res2);
         return new LinkedList<>(lhs);
-
     }
 
     @Override
     public List<Node> visitFilterRP(XPathParser.FilterRPContext ctx) {
 
         List<Node> currentCtxPNodes = paramNodes;
-        setPNodes(currentCtxPNodes);
+        setParamNodes(currentCtxPNodes);
         List<Node> res = visit(ctx.rp());
-        setPNodes(res);
+        setParamNodes(res);
         return visit(ctx.f());
-
     }
 
     @Override
     public List<Node> visitCommaRP(XPathParser.CommaRPContext ctx) {
-
-        List<Node> currentCtxPNodes = paramNodes;
-        setPNodes(currentCtxPNodes);
+        List<Node> originalParamNodes = new ArrayList<>(paramNodes);
         List<Node> res1 = visit(ctx.rp(0));
-        setPNodes(currentCtxPNodes);                 // reset paramNodes to original state
+        paramNodes = originalParamNodes; // Reset paramNodes to original state
         List<Node> res2 = visit(ctx.rp(1));
-
-        res1.addAll(res2);
+        res1.addAll(res2); // Combine results
         return res1;
-
     }
 
-    // never called. visit return at tagRP
+
     @Override
     public List<Node> visitTagName(XPathParser.TagNameContext ctx) {
         return super.visitTagName(ctx);
     }
 
-    // never called. visit return at attrRP/
     @Override
     public List<Node> visitAttrName(XPathParser.AttrNameContext ctx) {
         return super.visitAttrName(ctx);
     }
 
-    // never called. visit return at visitDoc.
+
     @Override
     public List<Node> visitFileName(XPathParser.FileNameContext ctx) {
         return super.visitFileName(ctx);
     }
 
-    // never called. visit return at visitDoc.
     @Override
     public List<Node> visitStringConstant(XPathParser.StringConstantContext ctx) {
         return super.visitStringConstant(ctx);
     }
 
+
     @Override
     public List<Node> visitStringFilter(XPathParser.StringFilterContext ctx) {
-        List<Node> origin = paramNodes;
-        return filterCollectVisitHelper(origin,
-                node -> {
-                    List<Node> oneNodeList = new LinkedList<>();
-                    oneNodeList.add(node);
-                    setPNodes(oneNodeList);
-                    List<Node> res1 = visit(ctx.rp());
-                    // setPNodes(oneNodeList);
-                    String stringConstant = ctx.stringConstant().ID().getText();
-                    for (Node x : res1) {
-                        if (x.getTextContent().equals(stringConstant)) {
-                            return true;
-                        }
-                    }
-                    return false;
-                }
-        );
+        String stringConstant = ctx.stringConstant().ID().getText();
+        return filterCollectVisitHelper(paramNodes, node -> {
+            setParamNodes(Collections.singletonList(node));
+            return visit(ctx.rp()).stream()
+                    .anyMatch(x -> x.getTextContent().equals(stringConstant));
+        });
     }
-
 
     @Override
     public List<Node> visitEqFilter(XPathParser.EqFilterContext ctx) {
-        List<Node> origin = paramNodes;
-        return filterCollectVisitHelper(origin,
-                node -> {
-                    List<Node> oneNodeList = new LinkedList<>();
-                    oneNodeList.add(node);
-                    setPNodes(oneNodeList);
-                    List<Node> res1 = visit(ctx.rp(0));
-                    setPNodes(oneNodeList);
-                    List<Node> res2 = visit(ctx.rp(1));
-                    for (Node x : res1) {
-                        for (Node y: res2) {
-                            if (x.isEqualNode(y)) {
-                                return true;
-                            }
-                        }
-                    }
-                    return false;
-                }
-        );
+        return filterCollectVisitHelper(paramNodes, node -> {
+            setParamNodes(Collections.singletonList(node));
+            List<Node> res1 = visit(ctx.rp(0));
+            List<Node> res2 = visit(ctx.rp(1));
+            return res1.stream().anyMatch(x -> res2.stream().anyMatch(x::isEqualNode));
+        });
     }
 
     @Override
     public List<Node> visitNotFilter(XPathParser.NotFilterContext ctx) {
         List<Node> origin = paramNodes;
-        setPNodes(origin);
+        setParamNodes(origin);
         List<Node> filteredF = visit(ctx.f());
         HashSet<Node> s = new HashSet<>(filteredF);
         return filterCollectVisitHelper(origin, node -> !s.contains(node));
@@ -325,9 +259,9 @@ public class ExtendedEngineXPathVisitor extends XPathBaseVisitor<List<Node>> {
     @Override
     public List<Node> visitAndFilter(XPathParser.AndFilterContext ctx) {
         List<Node> origin = paramNodes;
-        setPNodes(origin);
+        setParamNodes(origin);
         List<Node> filteredWithF1 = visit(ctx.f(0));
-        setPNodes(filteredWithF1);
+        setParamNodes(filteredWithF1);
         return visit(ctx.f(1));
     }
 
@@ -338,25 +272,12 @@ public class ExtendedEngineXPathVisitor extends XPathBaseVisitor<List<Node>> {
 
     @Override
     public List<Node> visitIsFilter(XPathParser.IsFilterContext ctx) {
-        List<Node> origin = paramNodes;
-        return filterCollectVisitHelper(origin,
-                node -> {
-                    List<Node> oneNodeList = new LinkedList<>();
-                    oneNodeList.add(node);
-                    setPNodes(oneNodeList);
-                    List<Node> res1 = visit(ctx.rp(0));
-                    setPNodes(oneNodeList);
-                    List<Node> res2 = visit(ctx.rp(1));
-                    for (Node x : res1) {
-                        for (Node y: res2) {
-                            if (x.isSameNode(y)) {
-                                return true;
-                            }
-                        }
-                    }
-                    return false;
-                }
-        );
+        return filterCollectVisitHelper(paramNodes, node -> {
+            setParamNodes(Collections.singletonList(node));
+            List<Node> res1 = visit(ctx.rp(0));
+            List<Node> res2 = visit(ctx.rp(1));
+            return res1.stream().anyMatch(x -> res2.stream().anyMatch(x::isSameNode));
+        });
     }
 
     private List<Node> filterCollectVisitHelper(List<Node> origin, Predicate<Node> rule) {
@@ -367,29 +288,18 @@ public class ExtendedEngineXPathVisitor extends XPathBaseVisitor<List<Node>> {
 
     @Override
     public List<Node> visitRpFilter(XPathParser.RpFilterContext ctx) {
-        List<Node> origin = paramNodes;
-        return filterCollectVisitHelper(origin,
-                node -> {
-                    List<Node> oneNodeList = new LinkedList<>();
-                    oneNodeList.add(node);
-                    setPNodes(oneNodeList);
-                    List<Node> res = visit(ctx.rp());
-                    return res.size() > 0;
-                }
-        );
+        return filterCollectVisitHelper(paramNodes, node -> {
+            setParamNodes(Collections.singletonList(node));
+            return !visit(ctx.rp()).isEmpty();
+        });
     }
 
     @Override
     public List<Node> visitOrFilter(XPathParser.OrFilterContext ctx) {
-        List<Node> origin = paramNodes;
-        setPNodes(origin);
-        List<Node> rf1 = visit(ctx.f(0));
-        setPNodes(origin);
-        List<Node> rf2 = visit(ctx.f(1));
-        HashSet<Node> s1 = new HashSet<>(rf1);
-        HashSet<Node> s2 = new HashSet<>(rf2);
-        return filterCollectVisitHelper(origin,
-                node -> s1.contains(node) || s2.contains(node));
+        HashSet<Node> s1 = new HashSet<>(visit(ctx.f(0)));
+        HashSet<Node> s2 = new HashSet<>(visit(ctx.f(1)));
+        return filterCollectVisitHelper(paramNodes, node -> s1.contains(node) || s2.contains(node));
     }
+
 
 }
