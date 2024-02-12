@@ -61,6 +61,7 @@
                 <version>4.7.2</version>
                 <configuration>
                     <sourceDirectory>src/main/antlr4</sourceDirectory>
+                    <outputDirectory>${project.build.directory}/generated-sources/antlr4</outputDirectory>
                     <listener>false</listener>
                     <visitor>true</visitor>
                 </configuration>
