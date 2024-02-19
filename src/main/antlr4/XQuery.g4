@@ -1,50 +1,38 @@
-grammar XPath;
+grammar XQuery;
+import XPath;
 
-@header {
-    package org.cse232b.antlr4;
-}
-//absolute path
-ap  : doc '/' rp    #singleAP
-    | doc '//' rp   #doubleAP
-    ;
+var : '$' attName;
 
-// document
-doc : ('doc("' | 'document("') fileName '")'
-    ;
+xq : var                                                         # variable
+   | StringConstant                                              # string
+   | ap
+   | '(' xq ')'                                                  # xqBracket
+   | xq '/' rp                                                   # xqChildren
+   | xq '//' rp                                                  # xqDesc
+   | xq ',' xq                                                   # xqConcat
+   | forClause letClause? whereClause? returnClause              # flwrClause
+   | letClause xq                                                # let_clause
+   | '<' tagName '>' '{' xq '}' '</' tagName '>'                 # xqTag
+   ;
 
-// relative path
-rp  : tagName       #tagRP
-    | '*'           #childrenRP
-    | '.'           #selfRP
-    | '..'          #parentRP
-    | 'text()'      #textRP
-    | '@' attrName  #attrRP
-    | '(' rp ')'    #bracketRP
-    | rp '/' rp     #singleSlashRP
-    | rp '//' rp    #doubleSlashRP
-    | rp '[' f ']'  #filterRP
-    | rp ',' rp     #commaRP
-    ;
 
-//filter
-f   : rp        #rpFilter
-    | rp eq rp  #eqFilter
-    | rp IS rp  #isFilter
-	| rp '=' '"' stringConstant '"' #stringFilter
-    | '(' f ')' #bracketFilter
-    | f 'and' f #andFilter
-    | f 'or' f  #orFilter
-    | 'not' f   #notFilter
-    ;
+forClause : 'for' var 'in' xq (',' var 'in' xq)*;
 
-tagName : ID;
-attrName : ID;
-stringConstant: '"' ID '"' | '\'' ID '\'';
+letClause : 'let' var ':=' xq (',' var ':=' xq)*;
 
-eq  : '=' | 'eq';
-IS  : '==' | 'is';
-ID  : [a-zA-Z][a-zA-Z0-9_-]*;
+whereClause : 'where' cond;
 
-fileName    : FILENAME;
-FILENAME    : [a-zA-Z0-9_.-]+;
-SPC  : [ \t\n\r]+ -> skip;
+returnClause : 'return' xq;
+
+
+cond : xq '=' xq                         # eqCond
+     | xq 'eq' xq                        # eqCond
+     | xq '==' xq                        # isCond
+     | xq 'is' xq                        # isCond
+     | 'empty' '(' xq ')'                # emptyCond
+     | 'some' var 'in' xq (',' var 'in' xq)* 'satisfies' cond  # satisfyCond
+     | '(' cond ')'                      # Brackets
+     | cond 'and' cond                   # andCond
+     | cond 'or' cond                    # orCond
+     | 'not' cond                        # notCond
+     ;
