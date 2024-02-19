@@ -6,11 +6,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.util.List;
 
@@ -29,11 +25,11 @@ public class Main {
         try (InputStream xPathIStream = new FileInputStream(xPathFilePath)) {
             rawEvaluateRes = XPathEvaluator.evaluateXPathWithoutExceptionPrintErr(xPathIStream);
         } catch (IOException e) {
-            System.err.println("Open xPath file failed: " + e.getMessage());
+            System.err.println("Open XPath file failed: " + e.getMessage());
             return;
         }
         if (rawEvaluateRes == null) {
-            System.err.println("XPath evaluation failed. No result file generated.");
+            System.err.println("XPath evaluation failed. No output file exported.");
             return;
         }
         System.out.println("XPath evaluation finished, writing result file...");
@@ -46,13 +42,14 @@ public class Main {
 
             try (OutputStream resultXMLOStream = new FileOutputStream(outputFilePath)) {
                 XMLProcessor.writeDocumentToStream(resultDocument, resultXMLOStream);
+                System.out.println("Result File exported successfully!");
             }
         } catch (IOException e) {
             System.err.println("Open result file failed: " + e.getMessage());
         } catch (ParserConfigurationException | TransformerException e) {
-            System.err.println("Generating XML or transforming failed: " + e.getMessage());
+            System.err.println("Generate or transform XML failed: " + e.getMessage());
         } catch (Exception e) {
-            System.err.println("Runtime exception while generating/writing result: " + e.getMessage());
+            System.err.println("Encountered a runtime exception during result generation/writing: " + e.getMessage());
         }
     }
 

@@ -41,9 +41,5 @@ build/
 ### target ###
 target
 
-
-### zshrc ###
-.zshrc/
-
 ### idea ###
 .idea

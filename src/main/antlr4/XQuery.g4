@@ -5,7 +5,7 @@ var : '$' attName;
 
 xq : var                                                         # variable
    | StringConstant                                              # string
-   | ap                                                          
+   | ap
    | '(' xq ')'                                                  # xqBracket
    | xq '/' rp                                                   # xqChildren
    | xq '//' rp                                                  # xqDesc
@@ -36,6 +36,7 @@ cond : xq '=' xq                         # eqCond
      | cond 'or' cond                    # orCond
      | 'not' cond                        # notCond
      ;
+
 
 
 
