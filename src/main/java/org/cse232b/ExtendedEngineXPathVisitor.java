@@ -228,7 +228,7 @@ public class ExtendedEngineXPathVisitor extends XPathBaseVisitor<List<Node>> {
             setParamNodes(Collections.singletonList(node));
             List<Node> res1 = visit(ctx.rp(0));
             List<Node> res2 = visit(ctx.rp(1));
-            // Check if there is any text content match between any nodes in res1 and res2
+            // Check if there is any text match between any nodes in res1 and res2
             return res1.stream().anyMatch(n1 -> res2.stream().anyMatch(n2 ->
                     n1.isEqualNode(n2)));
         });
