@@ -221,15 +221,19 @@ public class ExtendedEngineXPathVisitor extends XPathBaseVisitor<List<Node>> {
         });
     }
 
+
     @Override
     public List<Node> visitEqFilter(XPathParser.EqFilterContext ctx) {
         return filterCollectVisitHelper(paramNodes, node -> {
             setParamNodes(Collections.singletonList(node));
             List<Node> res1 = visit(ctx.rp(0));
             List<Node> res2 = visit(ctx.rp(1));
-            return res1.stream().anyMatch(x -> res2.stream().anyMatch(x::isEqualNode));
+            // Check if there is any text content match between any nodes in res1 and res2
+            return res1.stream().anyMatch(n1 -> res2.stream().anyMatch(n2 ->
+                    n1.isEqualNode(n2)));
         });
     }
+
 
     @Override
     public List<Node> visitNotFilter(XPathParser.NotFilterContext ctx) {
@@ -264,6 +268,7 @@ public class ExtendedEngineXPathVisitor extends XPathBaseVisitor<List<Node>> {
         });
     }
 
+
     private List<Node> filterCollectVisitHelper(List<Node> origin, Predicate<Node> rule) {
         return origin.stream()
                 .filter(rule)
@@ -280,9 +285,15 @@ public class ExtendedEngineXPathVisitor extends XPathBaseVisitor<List<Node>> {
 
     @Override
     public List<Node> visitOrFilter(XPathParser.OrFilterContext ctx) {
-        HashSet<Node> s1 = new HashSet<>(visit(ctx.f(0)));
-        HashSet<Node> s2 = new HashSet<>(visit(ctx.f(1)));
-        return filterCollectVisitHelper(paramNodes, node -> s1.contains(node) || s2.contains(node));
+        List<Node> origin = paramNodes;
+        setParamNodes(origin);
+        List<Node> rf1 = visit(ctx.f(0));
+        setParamNodes(origin);
+        List<Node> rf2 = visit(ctx.f(1));
+        HashSet<Node> s1 = new HashSet<>(rf1);
+        HashSet<Node> s2 = new HashSet<>(rf2);
+        return filterCollectVisitHelper(origin,
+                node -> s1.contains(node) || s2.contains(node));
     }
 
 
