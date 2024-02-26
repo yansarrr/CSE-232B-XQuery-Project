@@ -304,7 +304,6 @@ public class ExtendedXQueryVisitor extends XQueryBaseVisitor<List<Node>> {
         }
     }
 
-    // Helper Methods
 
     private Node makeElem(String tag, List<Node> nodes) {
         Node res = doc.createElement(tag);

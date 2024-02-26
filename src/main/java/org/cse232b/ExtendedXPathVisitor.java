@@ -61,16 +61,6 @@ public class ExtendedXPathVisitor extends XPathBaseVisitor<List<Node>> {
 
 
     @Override
-    public List<Node> visitDoc(XPathParser.DocContext ctx) {
-        try {
-            return XMLProcessor.loadNodes(ctx.fileName().FILENAME().getText());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-
-    @Override
     public List<Node> visitSingleAP(XPathParser.SingleAPContext ctx) {
         List<Node> resDoc = visit(ctx.doc());
         setParamNodes(resDoc);
@@ -86,12 +76,17 @@ public class ExtendedXPathVisitor extends XPathBaseVisitor<List<Node>> {
 
     @Override
     public List<Node> visitTagRP(XPathParser.TagRPContext ctx) {
-        String targetTagName = ctx.tagName().ID().getText();
-        return paramNodes.stream()
-                .flatMap(node -> IntStream.range(0, node.getChildNodes().getLength())
-                        .mapToObj(node.getChildNodes()::item)
-                        .filter(child -> child.getNodeType() == Node.ELEMENT_NODE && child.getNodeName().equals(targetTagName)))
-                .collect(Collectors.toCollection(LinkedList::new));
+        List<Node> res = new LinkedList<>();
+        String tag = ctx.tagName().String().getText();
+        for (Node node : paramNodes) {
+            NodeList children = node.getChildNodes();
+            for (int i = 0; i < children.getLength(); i++) {
+                Node child = children.item(i);
+                if (child.getNodeType() != Node.ELEMENT_NODE) continue;
+                if (child.getNodeName().equals(tag)) res.add(child);
+            }
+        }
+        return res;
     }
 
 
@@ -132,7 +127,7 @@ public class ExtendedXPathVisitor extends XPathBaseVisitor<List<Node>> {
 
 
     @Override
-    public List<Node> visitAttRP(XPathParser.AttRPContext ctx) {
+    public List<Node> visitAttNameRP(XPathParser.AttNameRPContext ctx) {
         List<Node> res = paramNodes.stream()
                 .filter(node -> node.getNodeType() == Node.ELEMENT_NODE)
                 .flatMap(node -> IntStream.range(0, node.getAttributes().getLength())
@@ -213,26 +208,24 @@ public class ExtendedXPathVisitor extends XPathBaseVisitor<List<Node>> {
 
 
     @Override
-    public List<Node> visitFileName(XPathParser.FileNameContext ctx) {
-        return super.visitFileName(ctx);
+    public List<Node> visitStringConstantFilter(XPathParser.StringConstantFilterContext ctx) {
+        List<Node> temp = paramNodes;
+        String s = ctx.StringConstant().getText();
+        String content = s.substring(1, s.length() - 1); // Remove "
+        return temp.stream().filter(node -> {
+            List<Node> l = new LinkedList<>();
+            l.add(node);
+            paramNodes = l;
+            List<Node> left = visit(ctx.rp());
+            paramNodes = l;
+            for (Node n1 : left) {
+                if (n1.getTextContent().equals(content)) {
+                    return true;
+                }
+            }
+            return false;
+        }).collect(Collectors.toList());
     }
-
-    @Override
-    public List<Node> visitStringConstant(XPathParser.StringConstantContext ctx) {
-        return super.visitStringConstant(ctx);
-    }
-
-
-    @Override
-    public List<Node> visitStringFilter(XPathParser.StringFilterContext ctx) {
-        String stringConstant = ctx.stringConstant().ID().getText();
-        return filterCollectVisitHelper(paramNodes, node -> {
-            setParamNodes(Collections.singletonList(node));
-            return visit(ctx.rp()).stream()
-                    .anyMatch(x -> x.getTextContent().equals(stringConstant));
-        });
-    }
-
 
     @Override
     public List<Node> visitEqFilter(XPathParser.EqFilterContext ctx) {

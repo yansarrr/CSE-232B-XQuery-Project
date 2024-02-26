@@ -68,6 +68,18 @@ public interface XPathListener extends ParseTreeListener {
 	 */
 	void exitTextRP(XPathParser.TextRPContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code attRP}
+	 * labeled alternative in {@link XPathParser#rp}.
+	 * @param ctx the parse tree
+	 */
+	void enterAttRP(XPathParser.AttRPContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code attRP}
+	 * labeled alternative in {@link XPathParser#rp}.
+	 * @param ctx the parse tree
+	 */
+	void exitAttRP(XPathParser.AttRPContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code parentRP}
 	 * labeled alternative in {@link XPathParser#rp}.
 	 * @param ctx the parse tree
@@ -127,18 +139,6 @@ public interface XPathListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitChildrenRP(XPathParser.ChildrenRPContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code attNameRP}
-	 * labeled alternative in {@link XPathParser#rp}.
-	 * @param ctx the parse tree
-	 */
-	void enterAttNameRP(XPathParser.AttNameRPContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code attNameRP}
-	 * labeled alternative in {@link XPathParser#rp}.
-	 * @param ctx the parse tree
-	 */
-	void exitAttNameRP(XPathParser.AttNameRPContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code tagRP}
 	 * labeled alternative in {@link XPathParser#rp}.
@@ -248,6 +248,18 @@ public interface XPathListener extends ParseTreeListener {
 	 */
 	void exitRpFilter(XPathParser.RpFilterContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code stringFilter}
+	 * labeled alternative in {@link XPathParser#f}.
+	 * @param ctx the parse tree
+	 */
+	void enterStringFilter(XPathParser.StringFilterContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code stringFilter}
+	 * labeled alternative in {@link XPathParser#f}.
+	 * @param ctx the parse tree
+	 */
+	void exitStringFilter(XPathParser.StringFilterContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code orFilter}
 	 * labeled alternative in {@link XPathParser#f}.
 	 * @param ctx the parse tree
@@ -259,18 +271,6 @@ public interface XPathListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitOrFilter(XPathParser.OrFilterContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code stringConstantFilter}
-	 * labeled alternative in {@link XPathParser#f}.
-	 * @param ctx the parse tree
-	 */
-	void enterStringConstantFilter(XPathParser.StringConstantFilterContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code stringConstantFilter}
-	 * labeled alternative in {@link XPathParser#f}.
-	 * @param ctx the parse tree
-	 */
-	void exitStringConstantFilter(XPathParser.StringConstantFilterContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link XPathParser#tagName}.
 	 * @param ctx the parse tree
@@ -291,4 +291,24 @@ public interface XPathListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitAttName(XPathParser.AttNameContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link XPathParser#stringConstant}.
+	 * @param ctx the parse tree
+	 */
+	void enterStringConstant(XPathParser.StringConstantContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link XPathParser#stringConstant}.
+	 * @param ctx the parse tree
+	 */
+	void exitStringConstant(XPathParser.StringConstantContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link XPathParser#fileName}.
+	 * @param ctx the parse tree
+	 */
+	void enterFileName(XPathParser.FileNameContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link XPathParser#fileName}.
+	 * @param ctx the parse tree
+	 */
+	void exitFileName(XPathParser.FileNameContext ctx);
 }

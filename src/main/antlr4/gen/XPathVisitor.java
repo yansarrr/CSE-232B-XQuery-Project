@@ -47,6 +47,13 @@ public interface XPathVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitTextRP(XPathParser.TextRPContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code attRP}
+	 * labeled alternative in {@link XPathParser#rp}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAttRP(XPathParser.AttRPContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code parentRP}
 	 * labeled alternative in {@link XPathParser#rp}.
 	 * @param ctx the parse tree
@@ -81,13 +88,6 @@ public interface XPathVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitChildrenRP(XPathParser.ChildrenRPContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code attNameRP}
-	 * labeled alternative in {@link XPathParser#rp}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitAttNameRP(XPathParser.AttNameRPContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code tagRP}
 	 * labeled alternative in {@link XPathParser#rp}.
@@ -152,19 +152,19 @@ public interface XPathVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitRpFilter(XPathParser.RpFilterContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code stringFilter}
+	 * labeled alternative in {@link XPathParser#f}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitStringFilter(XPathParser.StringFilterContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code orFilter}
 	 * labeled alternative in {@link XPathParser#f}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitOrFilter(XPathParser.OrFilterContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code stringConstantFilter}
-	 * labeled alternative in {@link XPathParser#f}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitStringConstantFilter(XPathParser.StringConstantFilterContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link XPathParser#tagName}.
 	 * @param ctx the parse tree
@@ -177,4 +177,16 @@ public interface XPathVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitAttName(XPathParser.AttNameContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link XPathParser#stringConstant}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitStringConstant(XPathParser.StringConstantContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link XPathParser#fileName}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFileName(XPathParser.FileNameContext ctx);
 }

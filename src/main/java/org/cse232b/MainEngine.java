@@ -8,26 +8,43 @@ import org.w3c.dom.Node;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 public class MainEngine {
     public static void main(String[] args) {
+        // Check if the correct number of arguments are passed
         if (args.length != 3) {
             System.out.printf("Incorrect number of arguments: expected 3 but received %d\n", args.length);
             System.out.println("Usage: java -jar CSE232B-Milestone2.jar <p/q> <input_xquery_file> <output_xml_file>");
             return;
         }
+
         try {
-            String choice = args[0];
-            if (choice.equals("p")) {
-                xPathEvaluate(args[1], args[2]);
-            } else if (choice.equals("q")) {
-                xQueryEvaluate(args[1], args[2]);
+            // Process the arguments
+            String choice = args[0].toLowerCase(); // Handle case sensitivity for 'p' or 'q'
+
+            switch (choice) {
+                case "p":
+                    // Evaluate XPath
+                    xPathEvaluate(args[1], args[2]);
+                    break;
+                case "q":
+                    // Evaluate XQuery
+                    xQueryEvaluate(args[1], args[2]);
+                    break;
+                default:
+                    // Handle invalid choice
+                    System.out.printf("Invalid choice: '%s'. Please choose 'p' for XPath or 'q' for XQuery.\n", choice);
+                    break;
             }
         } catch (Exception e) {
+            // Handle any exceptions during the evaluation
             System.err.printf("Evaluation terminated: %s\n", e.getMessage());
             e.printStackTrace();
         }
     }
+
 
     private static void xPathEvaluate(String xPathFilePath, String outputFilePath) {
         List<Node> rawEvaluateRes = null;
@@ -62,6 +79,12 @@ public class MainEngine {
         writeResultToFile(rawEvaluateRes, outputFilePath, true);
     }
 
+    private static void evalXQuery(String inputPath, String outputPath) throws Exception {
+        InputStream xQueryInput = Files.newInputStream(Paths.get(inputPath));
+        XQueryEvaluator evaluator = new XQueryEvaluator();
+        List<Node> result = evaluator.eval(xQueryInput);
+        XMLProcessor.writeFile(outputPath, result);
+    }
 
     private static void writeResultToFile(List<Node> rawRes, String outputFilePath, boolean addResEle) {
         try {

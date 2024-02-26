@@ -1,8 +1,6 @@
 grammar XQuery;
 import XPath;
 
-var : '$' attName;
-
 xq : var                                            #varXQ
    | StringConstant                                 #strXQ
    | ap                                             #apXQ
@@ -29,3 +27,5 @@ cond : xq EQ xq                                                #eqCond
      | cond 'or' cond                                          #orCond
      | 'not' cond                                              #notCond
      ;
+
+var : '$' attName;
