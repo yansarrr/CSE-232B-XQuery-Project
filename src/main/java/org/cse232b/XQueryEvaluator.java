@@ -40,17 +40,4 @@ public class XQueryEvaluator {
         }
     }
 
-    public List<Node> eval(InputStream inputStream) throws Exception {
-        CharStream cs = CharStreams.fromStream(inputStream);
-        XQueryLexer lexer = new XQueryLexer(cs);
-        CommonTokenStream tks = new CommonTokenStream(lexer);
-        XQueryParser parser = new XQueryParser(tks);
-        parser.removeErrorListeners();
-        ExtendedXQueryVisitor visitor = new ExtendedXQueryVisitor(XMLProcessor.buildFactory.newDocumentBuilder().newDocument());
-        List<Node> res = visitor.visit(parser.xq());
-        if (res == null) {
-            throw new Exception("Empty result.");
-        }
-        return res;
-    }
 }
