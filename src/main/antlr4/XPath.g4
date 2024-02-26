@@ -20,7 +20,7 @@ rp  : tagName       #tagRP
     | '.'           #selfRP
     | '..'          #parentRP
     | 'text()'      #textRP
-    | '@' attrName  #attrRP
+    | '@' attName   #attRP
     | '(' rp ')'    #bracketRP
     | rp '/' rp     #singleSlashRP
     | rp '//' rp    #doubleSlashRP
@@ -40,7 +40,7 @@ f   : rp        #rpFilter
     ;
 
 tagName : ID;
-attrName : ID;
+attName : ID;
 stringConstant : '"' ID '"';
 
 EQ  : '=' | 'eq';
