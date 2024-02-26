@@ -81,12 +81,12 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>org.cse232b.Main</mainClass>
+                            <mainClass>org.cse232b.MainEngine</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>jar-with-dependencies</descriptorRefs>
                     <appendAssemblyId>false</appendAssemblyId>
-                    <finalName>CSE232B-Milestone1</finalName>
+                    <finalName>CSE232B-Milestone2</finalName>
                 </configuration>
                 <executions>
                     <execution>

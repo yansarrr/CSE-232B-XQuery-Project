@@ -16,10 +16,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -28,8 +25,8 @@ import java.util.List;
 public class XMLProcessor {
     public static final String DEFAULT_XML_FILE_NAME = "j_caesar.xml";
     public static final String DEFAULT_DTD_FILE_NAME = "play.dtd";
-    private static final DocumentBuilderFactory buildFactory = DocumentBuilderFactory.newInstance();
-    private static final TransformerFactory transformerFactory = TransformerFactory.newInstance();
+    public static final DocumentBuilderFactory buildFactory = DocumentBuilderFactory.newInstance();
+    public static final TransformerFactory transformerFactory = TransformerFactory.newInstance();
 
 
     private static DocumentBuilder getDocumentBuilder(InputStream dtdStream) throws ParserConfigurationException {
@@ -82,6 +79,7 @@ public class XMLProcessor {
         transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
         transformer.transform(new DOMSource(document), new StreamResult(outputStream));
     }
+
 
     public static void processAndOutputXML(String xmlFileName, OutputStream outputStream, boolean addResultElement)
             throws Exception {
