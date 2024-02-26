@@ -15,20 +15,27 @@ import java.util.List;
 
 public class XQueryEvaluator {
 
-
     public static List<Node> evaluateXQuery(InputStream xQueryIStream) throws IOException, ParserConfigurationException {
-        CharStream cs = CharStreams.fromStream(xQueryIStream);
-        XQueryLexer lexer = new XQueryLexer(cs);
-        CommonTokenStream tks = new CommonTokenStream(lexer);
-        XQueryParser parser = new XQueryParser(tks);
-        parser.removeErrorListeners();
-        DocumentBuilder bd = XMLProcessor.buildFactory.newDocumentBuilder();
-        ExtendedXQueryVisitor visitor = new ExtendedXQueryVisitor(bd.newDocument());
-        List<Node> res = visitor.visit(parser.xq());
-        if (res == null) {
-            throw new RuntimeException("visitor failed to get result.");
+        // Create input stream and parsing components
+        CharStream charStream = CharStreams.fromStream(xQueryIStream);
+        XQueryLexer lexer = new XQueryLexer(charStream);
+        CommonTokenStream tokenStream = new CommonTokenStream(lexer);
+        XQueryParser parser = new XQueryParser(tokenStream);
+        parser.removeErrorListeners(); // Suppress default error handling
+
+        // Prepare XML processing
+        DocumentBuilder documentBuilder = XMLProcessor.buildFactory.newDocumentBuilder();
+        ExtendedXQueryVisitor visitor = new ExtendedXQueryVisitor(documentBuilder.newDocument());
+
+        // Perform XQuery evaluation
+        List<Node> result = visitor.visit(parser.xq());
+
+        // Handle potential failure in visitor
+        if (result == null) {
+            throw new RuntimeException("XQuery evaluation failed."); // More informative message
         }
-        return res;
+
+        return result;
     }
 
     public static List<Node> evaluateXQueryWithoutExceptionPrintErr(InputStream xQueryStream) {
@@ -39,5 +46,4 @@ public class XQueryEvaluator {
             return null;
         }
     }
-
 }

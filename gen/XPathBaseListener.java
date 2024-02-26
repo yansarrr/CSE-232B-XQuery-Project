@@ -1,4 +1,4 @@
-// Generated from /Users/shaojie/Desktop/Winter24/CSE232B/M2/CSE-232B-XQuery-Project/src/main/antlr4/XPath.g4 by ANTLR 4.13.1
+// Generated from /Users/shaojie/Desktop/Winter24/CSE232B/CSE-232B-XQuery-Project/src/main/antlr4/XPath.g4 by ANTLR 4.13.1
 
     package org.cse232b.antlr4;
 

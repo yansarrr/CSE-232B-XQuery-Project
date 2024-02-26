@@ -31,35 +31,38 @@ public class XPathEvaluator {
     }
 
 
-    public List<Node> eval(InputStream inputStream) throws Exception {
-        CharStream cs = CharStreams.fromStream(inputStream);
-        XPathLexer lexer = new XPathLexer(cs);
-        CommonTokenStream tks = new CommonTokenStream(lexer);
-        XPathParser parser = new XPathParser(tks);
-        parser.removeErrorListeners();
-        ExtendedXPathVisitor visitor = new ExtendedXPathVisitor();
-        List<Node> res = visitor.visit(parser.ap());
-        if (res == null) {
-            throw new Exception("Empty result.");
+    // XQuery AP parse
+    public static List<Node> evaluateXPathAPWithRtException(InputStream inputStream) {
+        List<Node> res = null;
+        try {
+            res = evaluateXPath(inputStream);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
         return res;
     }
 
-    public List<Node> evalRP(InputStream inputStream, List<Node> ctxNodes) {
+    //  XQuery RP parse
+    public static List<Node> evaluateXPathRPByPNodesWithRtException(InputStream inputStream, List<Node> pNodes) {
         try {
-            CharStream cs = CharStreams.fromStream(inputStream);
-            XPathLexer lexer = new XPathLexer(cs);
-            CommonTokenStream tks = new CommonTokenStream(lexer);
-            XPathParser parser = new XPathParser(tks);
-            parser.removeErrorListeners();
+            // Setup parsing components
+            CharStream charStream = CharStreams.fromStream(inputStream);
+            XPathLexer lexer = new XPathLexer(charStream);
+            CommonTokenStream tokenStream = new CommonTokenStream(lexer);
+            XPathParser parser = new XPathParser(tokenStream);
+            parser.removeErrorListeners(); // Suppress default errors
+
+            // Configure and execute XPath evaluation
             ExtendedXPathVisitor visitor = new ExtendedXPathVisitor();
-            visitor.setParamNodes(ctxNodes);
+            visitor.setParamNodes(pNodes);
             return visitor.visit(parser.rp());
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("XPath evaluation failed.", e); // Specific message
         }
-
     }
+
+
+
 
     public static List<Node> evaluateXPathWithoutExceptionPrintErr(InputStream xPathStream) {
         try {

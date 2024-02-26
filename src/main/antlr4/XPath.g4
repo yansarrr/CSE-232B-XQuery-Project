@@ -10,17 +10,17 @@ ap  : doc '/' rp    #singleAP
     ;
 
 // document
-doc : 'doc("' FileName '")'
+doc : ('doc("' | 'document("') fileName '")'
     ;
 
 
-//rp
-rp  : tagName   #tagRP
-    | '*'       #childrenRP
-    | '.'       #selfRP
-    | '..'      #parentRP
-    | 'text()'  #textRP
-    | '@' attName   #attNameRP
+// relative path
+rp  : tagName       #tagRP
+    | '*'           #childrenRP
+    | '.'           #selfRP
+    | '..'          #parentRP
+    | 'text()'      #textRP
+    | '@' attrName  #attrRP
     | '(' rp ')'    #bracketRP
     | rp '/' rp     #singleSlashRP
     | rp '//' rp    #doubleSlashRP
@@ -28,25 +28,26 @@ rp  : tagName   #tagRP
     | rp ',' rp     #commaRP
     ;
 
-//filter
-f   : rp            #rpFilter
-    | rp EQ rp      #eqFilter
-    | rp IS rp      #isFilter
-    | rp EQ StringConstant #stringConstantFilter
-    | '(' f ')'     #bracketFilter
-    | f 'and' f     #andFilter
-    | f 'or' f      #orFilter
-    | 'not' f       #notFilter
+// filter
+f   : rp        #rpFilter
+    | rp eq rp  #eqFilter
+    | rp IS rp  #isFilter
+	| rp '=' '"' stringConstant '"' #stringFilter
+    | '(' f ')' #bracketFilter
+    | f 'and' f #andFilter
+    | f 'or' f  #orFilter
+    | 'not' f   #notFilter
     ;
 
-tagName: String;
-attName: String;
+tagName : ID;
+attrName : ID;
+stringConstant : ID;
 
-EQ  : '=' | 'eq';
+eq  : '=' | 'eq';
 IS  : '==' | 'is';
-FileName: [a-zA-Z0-9._]+ '.xml';
-String: [a-zA-Z0-9._]+;
-StringConstant: '"'+[a-zA-Z0-9,.!?; '"-]+'"';
+ID  : [a-zA-Z][a-zA-Z0-9_-]*;
+
+fileName    : FILENAME;
+FILENAME    : [a-zA-Z0-9_.-]+;
+
 SPC  : [ \t\r\n]+ -> skip;
-
-

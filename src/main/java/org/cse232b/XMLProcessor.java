@@ -80,21 +80,6 @@ public class XMLProcessor {
         transformer.transform(new DOMSource(document), new StreamResult(outputStream));
     }
 
-    public static void writeFile(String xmlFilePath, List<Node> result) throws Exception {
-        OutputStream xmlStream = new FileOutputStream(xmlFilePath);
-        DocumentBuilder bd = buildFactory.newDocumentBuilder();
-        Document d = bd.newDocument();
-        Element root = d.createElement("result");
-        d.appendChild(root);
-        for (Node n : result) {
-            root.appendChild(d.importNode(n, true));
-        }
-        Transformer transformer = transformerFactory.newTransformer();
-        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-        transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-        transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-        transformer.transform(new DOMSource(d), new StreamResult(xmlStream));
-    }
 
     public static void processAndOutputXML(String xmlFileName, OutputStream outputStream, boolean addResultElement)
             throws Exception {
