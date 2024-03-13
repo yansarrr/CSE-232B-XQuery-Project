@@ -86,7 +86,7 @@
                     </archive>
                     <descriptorRefs>jar-with-dependencies</descriptorRefs>
                     <appendAssemblyId>false</appendAssemblyId>
-                    <finalName>CSE232B-Milestone2</finalName>
+                    <finalName>CSE232B-Milestone3</finalName>
                 </configuration>
                 <executions>
                     <execution>

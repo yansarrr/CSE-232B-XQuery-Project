@@ -316,7 +316,6 @@ public class ExtendedXQueryVisitor extends XQueryBaseVisitor<List<Node>>{
 
     @Override
     public List<Node> visitEmptyCond(XQueryParser.EmptyCondContext ctx) {
-
         List<Node> res;
         setContextMap(contextMap);
         res = visit(ctx.xq());
