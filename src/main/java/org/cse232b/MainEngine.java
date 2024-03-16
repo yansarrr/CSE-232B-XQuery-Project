@@ -113,34 +113,5 @@ public class MainEngine {
         }
     }
 
-//    private static void reWriteXQueryToJoin(String xQueryFilePath) {
-//        String reWriteRes = "";
-//        try (InputStream xQueryIStream = new FileInputStream(xQueryFilePath)){
-//            reWriteRes = XQueryRewriter.rewriteToJoinXquery(xQueryFilePath, xQueryIStream);
-//        }catch (IOException e) {
-//            System.err.println("open xQuery file failed: " + e.getMessage());
-//        } catch (Exception e) {
-//            System.err.println("rewrite xquery failed : " + e.getMessage());
-//        }
-//        File file =new File("rewrite-" + xQueryFilePath);
-//
-//        //if file doesn't exist, then create it
-//        if(!file.exists()){
-//            try {
-//                file.createNewFile();
-//            } catch (IOException ex) {
-//                throw new RuntimeException(ex);
-//            }
-//        }
-//
-//        //true = append file
-//        try (            FileWriter fileWriter = new FileWriter(file.getName());
-//                         BufferedWriter bufferWriter = new BufferedWriter(fileWriter)){
-//            bufferWriter.write(reWriteRes);
-//        } catch (IOException ex) {
-//            throw new RuntimeException(ex);
-//        }
-//    }
-
 
 }
