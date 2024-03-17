@@ -8,7 +8,7 @@ XQueryProcessor is a Java-based engine for parsing and evaluating XPath/XQuery e
 
 To use the XQueryProcessor, compile the Java source code and then run the resulting JAR file with the following command:
 
-`java -jar CSE232B-Milestone2.jar <-p/-q> <input_xpath/xquery_file> <output_xml_file>`
+`java -jar CSE232B-Milestone3.jar <-p/-q> <input_xpath/xquery_file> <output_xml_file>`
 
 Switch between `<-p/-q>` to choose execute xpath or xquery command
 

@@ -15,28 +15,42 @@ import java.util.List;
 
 public class XQueryEvaluator {
 
+
     public static List<Node> evaluateXQuery(InputStream xQueryIStream) throws IOException, ParserConfigurationException {
+        System.out.println("Starting XQuery evaluation...");
+
         // Create input stream and parsing components
         CharStream charStream = CharStreams.fromStream(xQueryIStream);
+        System.out.println("CharStream created.");
+
         XQueryLexer lexer = new XQueryLexer(charStream);
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
+        System.out.println("Lexer and TokenStream initialized.");
+
         XQueryParser parser = new XQueryParser(tokenStream);
-        parser.removeErrorListeners(); // Suppress default error handling
+        parser.removeErrorListeners();
+        System.out.println("Parser initialized and default error listeners removed.");
 
         // Prepare XML processing
         DocumentBuilder documentBuilder = XMLProcessor.buildFactory.newDocumentBuilder();
+        System.out.println("DocumentBuilder initialized.");
+
         ExtendedXQueryVisitor visitor = new ExtendedXQueryVisitor(documentBuilder.newDocument());
+        System.out.println("Visitor initialized with a new document.");
 
         // Perform XQuery evaluation
-        List<Node> result = visitor.visit(parser.xq());
-
-        // Handle potential failure in visitor
-        if (result == null) {
-            throw new RuntimeException("XQuery evaluation failed."); // More informative message
+        List<Node> result = null;
+        try {
+            result = visitor.visit(parser.xq());
+            System.out.println("XQuery evaluation performed.");
+        } catch (Exception e) {
+            System.err.println("Exception caught during XQuery evaluation: " + e.toString());
+            e.printStackTrace(); // Print stack trace for debugging
         }
 
         return result;
     }
+
 
     public static List<Node> evaluateXQueryWithoutExceptionPrintErr(InputStream xQueryStream) {
         try {

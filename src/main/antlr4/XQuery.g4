@@ -22,7 +22,7 @@ joinClause: 'join' '(' xq ',' xq ',' idList ',' idList ')';
 
 cond : xq eq xq                                                #eqCond
      | xq IS xq                                                #isCond
-     | 'empty(' xq ')'                                         #emptyCond
+     | 'empty' '(' xq ')'                                      #emptyCond
      | 'some' var 'in' xq (',' var 'in' xq)* 'satisfies' cond  #satisfyCond
      | '(' cond ')'                                            #braceCond
      | cond 'and' cond                                         #andCond

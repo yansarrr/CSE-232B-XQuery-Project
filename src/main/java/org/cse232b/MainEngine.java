@@ -14,14 +14,17 @@ public class MainEngine {
     public static void main(String[] args) {
         if (args.length != 3) {
             System.out.printf("Incorrect number of arguments: expected 3 but received %d\n", args.length);
-            System.out.println("Usage: java -jar CSE232B-Milestone2.jar <input_xquery_file> <output_xml_file>");
+            System.out.println("Usage: java -jar CSE232B-Milestone3.jar <-option> <input_xquery_file> <output_xml_file>");
             return;
         }
         if ("-p".equals(args[0])) {
             xPathEvaluate(args[1], args[2]);
         } else if ("-q".equals(args[0])) {
             xQueryEvaluate(args[1], args[2]);
+        } else if ("-j".equals(args[0])) {
+            reWriteXQueryToJoin(args[1]);
         }
+
     }
 
     private static void xPathEvaluate(String xPathFilePath, String outputFilePath) {
@@ -75,6 +78,40 @@ public class MainEngine {
         }
     }
 
+    private static void reWriteXQueryToJoin(String xQueryFilePath) {
+        String reWriteRes = "";
+        try (InputStream xQueryIStream = new FileInputStream(xQueryFilePath)){
+            reWriteRes = XQueryRewriter.rewriteToJoinXquery(xQueryFilePath, xQueryIStream);
+        } catch (IOException e) {
+            System.err.println("open xQuery file failed: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("rewrite xquery failed : " + e.getMessage());
+        }
+
+        File file = new File("rewrite-" + xQueryFilePath);
+
+        // Ensure parent directories exist
+        if (!file.getParentFile().exists()) {
+            file.getParentFile().mkdirs();
+        }
+
+        // Create file if it doesn't exist
+        if (!file.exists()) {
+            try {
+                file.createNewFile();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+
+        // Write to file
+        try (FileWriter fileWriter = new FileWriter(file.getAbsolutePath());
+             BufferedWriter bufferWriter = new BufferedWriter(fileWriter)) {
+            bufferWriter.write(reWriteRes);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 
 
 }
