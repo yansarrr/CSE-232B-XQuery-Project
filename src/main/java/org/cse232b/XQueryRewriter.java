@@ -8,6 +8,9 @@ import org.w3c.dom.Node;
 
 import javax.xml.parsers.DocumentBuilder;
 import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 
@@ -20,19 +23,14 @@ public class XQueryRewriter {
         }
         return res;
     }
+
     private static String readToString(File file) {
-        long fileLength = file.length();
-        byte[] fileContent = new byte[(int) fileLength];
         try {
-            FileInputStream in = new FileInputStream(file);
-            in.read(fileContent);
-            in.close();
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
+            // Read all bytes from the file and convert to String
+            return new String(Files.readAllBytes(file.toPath()));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return new String(fileContent);
     }
 
     static String exeJoinWrite(InputStream inputStream) {

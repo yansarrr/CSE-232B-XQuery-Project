@@ -390,66 +390,67 @@ public class ExtendedXQueryVisitor extends XQueryBaseVisitor<List<Node>>{
 
     @Override
     public List<Node> visitJoinClause(XQueryParser.JoinClauseContext ctx) {
-
         List<Node> lTable = visit(ctx.xq(0));
         List<Node> rTable = visit(ctx.xq(1));
 
-        String [] lAttrList = new String[ctx.idList(0).ID().size()];
-        String [] rAttrList = new String[ctx.idList(0).ID().size()];
+        String[] lAttrList = extractAttributes(ctx.idList(0));
+        String[] rAttrList = extractAttributes(ctx.idList(1));
 
-        for (int i = 0; i < ctx.idList(0).ID().size(); ++i) {
-            lAttrList[i] = ctx.idList(0).ID(i).getText();
-            rAttrList[i] = ctx.idList(1).ID(i).getText();
-        }
+        HashMap<String, List<Node>> lHashTable = buildHashTable(lTable, lAttrList);
 
-        // build hashtable
-        HashMap<String, List<Node>> lHashTable = new HashMap<String, List<Node>>();
-        for (Node tuple: lTable) {
-            List<Node> cols = obtainColumns(tuple);
-            StringBuilder key = new StringBuilder();
-            for (String attr: lAttrList)
-                for (Node col: cols)
-                    if (attr.equals(col.getNodeName()))
-                        key.append(col.getChildNodes().item(0).getTextContent());
-
-            if (!lHashTable.containsKey(key.toString())) {
-                LinkedList<Node> value = new LinkedList<>();
-                value.add(tuple);
-                lHashTable.put(key.toString(), value);
-            } else {
-                lHashTable.get(key.toString()).add(tuple);
-            }
-        }
-
-
-        // perform join operation
         List<Node> result = new LinkedList<>();
-        for (Node tuple: rTable) {
-
-            List<Node> cols = obtainColumns(tuple);
-            StringBuilder key = new StringBuilder();
-
-            for (String attr: rAttrList)
-                for (Node col: cols)
-                    if (attr.equals(col.getNodeName()))
-                        key.append(col.getChildNodes().item(0).getTextContent());
-
-            if (lHashTable.containsKey(key.toString())) {
-
-                List<Node> cResult = new LinkedList<>();
-
-                for (Node lNode: lHashTable.get(key.toString())) {
-                    List<Node> ccols = obtainColumns(lNode);
-                    List<Node> rcols = obtainColumns(tuple);
-                    ccols.addAll(rcols);
-
-                    result.add(makeElem("tuple", ccols));
+        for (Node tuple : rTable) {
+            String key = createKeyFromAttributes(tuple, rAttrList);
+            List<Node> matchedTuples = lHashTable.get(key);
+            if (matchedTuples != null) {
+                for (Node lNode : matchedTuples) {
+                    List<Node> joinedTuple = joinTuples(lNode, tuple);
+                    result.add(makeElem("tuple", joinedTuple));
                 }
-                result.addAll(cResult);
             }
         }
         return result;
     }
+
+    private String[] extractAttributes(XQueryParser.IdListContext idListContext) {
+        int size = idListContext.ID().size();
+        String[] attrList = new String[size];
+        for (int i = 0; i < size; i++) {
+            attrList[i] = idListContext.ID(i).getText();
+        }
+        return attrList;
+    }
+
+    private HashMap<String, List<Node>> buildHashTable(List<Node> table, String[] attrList) {
+        HashMap<String, List<Node>> hashTable = new HashMap<>();
+        for (Node tuple : table) {
+            String key = createKeyFromAttributes(tuple, attrList);
+            hashTable.computeIfAbsent(key, k -> new LinkedList<>()).add(tuple);
+        }
+        return hashTable;
+    }
+
+    private String createKeyFromAttributes(Node tuple, String[] attrList) {
+        StringBuilder keyBuilder = new StringBuilder();
+        List<Node> cols = obtainColumns(tuple);
+        for (String attr : attrList) {
+            for (Node col : cols) {
+                if (attr.equals(col.getNodeName())) {
+                    keyBuilder.append(col.getChildNodes().item(0).getTextContent());
+                    break;
+                }
+            }
+        }
+        return keyBuilder.toString();
+    }
+
+    private List<Node> joinTuples(Node lNode, Node rNode) {
+        List<Node> lCols = obtainColumns(lNode);
+        List<Node> rCols = obtainColumns(rNode);
+        lCols.addAll(rCols);
+        return lCols;
+    }
+
 
     @Override public List<Node> visitXqJoin(XQueryParser.XqJoinContext ctx) {
         return visitChildren(ctx);

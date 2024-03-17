@@ -15,28 +15,6 @@ import java.util.List;
 
 public class XQueryEvaluator {
 
-//    public static List<Node> evaluateXQuery(InputStream xQueryIStream) throws IOException, ParserConfigurationException {
-//        // Create input stream and parsing components
-//        CharStream charStream = CharStreams.fromStream(xQueryIStream);
-//        XQueryLexer lexer = new XQueryLexer(charStream);
-//        CommonTokenStream tokenStream = new CommonTokenStream(lexer);
-//        XQueryParser parser = new XQueryParser(tokenStream);
-//        parser.removeErrorListeners(); // Suppress default error handling
-//
-//        // Prepare XML processing
-//        DocumentBuilder documentBuilder = XMLProcessor.buildFactory.newDocumentBuilder();
-//        ExtendedXQueryVisitor visitor = new ExtendedXQueryVisitor(documentBuilder.newDocument());
-//
-//        // Perform XQuery evaluation
-//        List<Node> result = visitor.visit(parser.xq());
-//
-//        // Handle potential failure in visitor
-//        if (result == null) {
-//            throw new RuntimeException("XQuery evaluation failed."); // More informative message
-//        }
-//
-//        return result;
-//    }
 
     public static List<Node> evaluateXQuery(InputStream xQueryIStream) throws IOException, ParserConfigurationException {
         System.out.println("Starting XQuery evaluation...");
@@ -50,7 +28,7 @@ public class XQueryEvaluator {
         System.out.println("Lexer and TokenStream initialized.");
 
         XQueryParser parser = new XQueryParser(tokenStream);
-        parser.removeErrorListeners(); // Suppress default error handling
+        parser.removeErrorListeners();
         System.out.println("Parser initialized and default error listeners removed.");
 
         // Prepare XML processing
@@ -69,7 +47,6 @@ public class XQueryEvaluator {
             System.err.println("Exception caught during XQuery evaluation: " + e.toString());
             e.printStackTrace(); // Print stack trace for debugging
         }
-
 
         return result;
     }

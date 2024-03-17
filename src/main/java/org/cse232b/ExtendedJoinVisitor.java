@@ -30,9 +30,6 @@ public class ExtendedJoinVisitor extends XQueryBaseVisitor<String> {
 
             char curCh = strReturn.charAt(i);
             if (!Character.isDigit(curCh) && !Character.isLetter(curCh) && isVariable) {
-
-                // OMG! this replacement is dummy. Caused wrong grammar while evaluating.
-                //TODO: bugfix: add bracket for correct grammar of commaXQ. [fixed]
                 strReturn = strReturn.substring(0, i) + "/*)" + strReturn.substring(i);
                 isVariable = false;
             }
@@ -83,60 +80,60 @@ public class ExtendedJoinVisitor extends XQueryBaseVisitor<String> {
         }
     }
 
-    private void joinResults(HashMap<HashSet<Integer>, String> finalResult, HashMap<String, LinkedList<String[]>> gpsCond, HashMap<Integer, String> finalForgp){
+    private void joinResults(HashMap<HashSet<Integer>, String> finalResult, HashMap<String, LinkedList<String[]>> gpsCond, HashMap<Integer, String> finalForgp) {
+        addInitialResults(finalResult, finalForgp);
+        processGpsConditions(finalResult, gpsCond);
+    }
 
-        for (Integer gp : finalForgp.keySet()) {
+    private void addInitialResults(HashMap<HashSet<Integer>, String> finalResult, HashMap<Integer, String> finalForgp) {
+        finalForgp.forEach((gp, value) -> {
             HashSet<Integer> newList = new HashSet<>();
             newList.add(gp);
-            finalResult.put(newList, finalForgp.get(gp));
-        }
+            finalResult.put(newList, value);
+        });
+    }
 
-        for (String key : gpsCond.keySet()) {
-
+    private void processGpsConditions(HashMap<HashSet<Integer>, String> finalResult, HashMap<String, LinkedList<String[]>> gpsCond) {
+        gpsCond.forEach((key, value) -> {
             HashSet<Integer> newList = new HashSet<>();
+            String[] gps = key.split(",");
+            int gp1 = Integer.valueOf(gps[0]);
+            int gp2 = Integer.valueOf(gps[1]);
 
-            String strFinal = "join (\n\n";
-            String gpString1 = "";
-            String gpString2 = "";
+            String gpString1 = removeFromFinalResults(finalResult, gp1, newList);
+            String gpString2 = removeFromFinalResults(finalResult, gp2, newList);
 
-            int gp1 = Integer.valueOf(key.split(",")[0]);
-            int gp2 = Integer.valueOf(key.split(",")[1]);
-
-
-            for (HashSet<Integer> lKey : finalResult.keySet()) {
-
-                if (lKey.contains(gp1)) {
-                    gpString1 = finalResult.get(lKey);
-                    finalResult.remove(lKey);
-                    newList.addAll(lKey);
-                    break;
-                }
-            }
-
-            for (HashSet<Integer> lKey : finalResult.keySet()) {
-                if (lKey.contains(gp2)) {
-                    gpString2 = finalResult.get(lKey);
-                    finalResult.remove(lKey);
-                    newList.addAll(lKey);
-                    break;
-                }
-            }
-
-            String l1 = "[", l2 = "[";
-            strFinal += gpString1 + "\n" + gpString2 + "\n";
-
-            for (String[] eqCond : gpsCond.get(key)) {
-                l1 += eqCond[0].substring(1) + ",";
-                l2 += eqCond[1].substring(1) + ",";
-            }
-            l1 = l1.substring(0, l1.length() - 1) + "], ";
-            l2 = l2.substring(0, l2.length() - 1) + "]";
-
-            strFinal += l1 + l2;
-            strFinal += "),\n";
+            String conditionsStr = buildConditionsString(value);
+            String strFinal = buildFinalString(gpString1, gpString2, conditionsStr);
 
             finalResult.put(newList, strFinal);
+        });
+    }
+
+    private String removeFromFinalResults(HashMap<HashSet<Integer>, String> finalResult, int gp, HashSet<Integer> newList) {
+        for (HashSet<Integer> lKey : new HashSet<>(finalResult.keySet())) { // Avoid ConcurrentModificationException
+            if (lKey.contains(gp)) {
+                String result = finalResult.remove(lKey);
+                newList.addAll(lKey);
+                return result;
+            }
         }
+        return "";
+    }
+
+    private String buildConditionsString(LinkedList<String[]> conditions) {
+        String l1 = "[", l2 = "[";
+        for (String[] eqCond : conditions) {
+            l1 += eqCond[0].substring(1) + ",";
+            l2 += eqCond[1].substring(1) + ",";
+        }
+        l1 = l1.substring(0, l1.length() - 1) + "], ";
+        l2 = l2.substring(0, l2.length() - 1) + "]";
+        return l1 + l2;
+    }
+
+    private String buildFinalString(String gpString1, String gpString2, String conditionsStr) {
+        return "join (\n\n" + gpString1 + "\n" + gpString2 + "\n" + conditionsStr + "),\n";
     }
 
 
@@ -154,17 +151,12 @@ public class ExtendedJoinVisitor extends XQueryBaseVisitor<String> {
             String var = ctx.forClause().var(i).getText();
             String path = ctx.forClause().xq(i).getText();
 
-            if (path.substring(0, 1).equals("$")) {
-                String parentVar = path.split("/")[0];
-                gpVariable.put(var, gpVariable.get(parentVar));
-            }
-            else {
-                gpVariable.put(var, i);
-            }
-            indexVariable.put(var, i);
-        }
+            String parentVar = path.substring(0, 1).equals("$") ? path.split("/")[0] : null;
+            int gpVariableValue = parentVar != null ? gpVariable.get(parentVar) : i;
 
-        for (int i = 0; i < ctx.forClause().var().size(); i ++) {
+            gpVariable.put(var, gpVariableValue);
+            indexVariable.put(var, i);
+
             String key = ctx.forClause().var(i).getText();
             Integer val = gpVariable.get(key);
 
@@ -174,6 +166,7 @@ public class ExtendedJoinVisitor extends XQueryBaseVisitor<String> {
             }
             gpVar.get(val).add(key);
         }
+
         if (gpVar.size() == 1) {
             return NO_CHANGE_MARK;
         }
